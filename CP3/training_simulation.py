@@ -92,22 +92,27 @@ class Simulation:
             # multiple up to 14 time steps at a time (4 sec yellow + 10 sec new phase), so be careful 
             # about how you trigger the sparse reward.
             
-            if self.step >= self.max_steps - 15:
-                base_reward = -current_total_wait 
-            else:
-                base_reward = 0
+            #DONE: reward became less sparse
+            base_reward = -current_total_wait     
             if self.reward_type == 'base':
                 reward = base_reward
             # TODO:Add different types of reward options: speed, speed change,sparse, custom
             elif self.reward_type == 'waittime':            
                 # Waiting time change as the reward. No more additional reward needed for
-                reward = base_reward
+                reward = old_total_wait - current_total_wait
             elif self.reward_type == 'speed':
+                #TODO: experiment reward = i) average_speed ii) old_average_speed - average_speed iii)average_speed/self.training_epochs
+                tuning_reward = average_speed
+                reward = base_reward + tuning_reward
                 # reward = average_speed #old_average_speed - average_speed
                 tuning_reward = 0 # TODO: Average speed reward tuning
                 reward = base_reward + tuning_reward
             elif self.reward_type == 'custom':
-                # TODO: Implement your reward function
+                #DONE: reward shaping
+                state_potential = self.get_potential(old_state)
+                next_state_potential = self.get_potential(current_state)
+                potential = self.gamma * next_state_potential - state_potential
+                reward = base_reward + potential
                 pass
             else:
                 raise ValueError("Reward type not recognized")
@@ -406,7 +411,8 @@ class Simulation:
 
         # TODO : Calculate the loss
         # set the loss variable to the right expression using the computed quantities above
-        loss = next_q_value - q_value # This is a toy loss, please implemet your own loss function here
+        expected_q_value = reward + self.gamma * next_q_value
+        loss = torch.nn.functional.mse_loss(q_value, expected_q_value.detach())
 
         # next we do the gradient update based on the calculated loss
         self.optimizer.zero_grad()
@@ -420,3 +426,12 @@ class Simulation:
         Save the DQN model
         """
         torch.save(self.dqn, path + "/" + str(episode))
+
+    def get_potential(self, state):
+        if state is not None:
+            # Calculate the potential based on the state
+            # Example: potential is the negative of the total waiting time
+            potential = -self.collect_waiting_times()
+        else:
+            potential = 0.0
+        return potential

@@ -23,6 +23,17 @@ class DQN(nn.Module):
         Define the neural network for the DQN agent.
         """
         
+        self.layers = nn.Sequential(
+        nn.Linear(self._input_dim, self._width),
+        nn.ReLU(),
+        nn.Linear(self._width, self._width),
+        nn.ReLU(),
+        nn.Linear(self._width, self._width),
+        nn.ReLU(),
+        nn.Linear(self._width, self._width),
+        nn.ReLU(),
+        nn.Linear(self._width, self._output_dim)
+        )
         # TODO : Define the neural network structure here.
         # Define the model and assign it to self.layers
         # ex: self.layers = Model() in which Model(), you need to define as per the instructions below.
@@ -34,9 +45,6 @@ class DQN(nn.Module):
         # Each layer is followed by a ReLu non linearity except the output layer.
         # self._width, self._output_dim, self._input_dim are defined in training_settings.ini.
         
-        self.layers = nn.Sequential(
-            nn.Linear(self._input_dim, self._output_dim)
-        ) # TODO This is a toy neural network, please implement your own neural network.
             
         # Following documentation will be helpful in this task.
         # https://pytorch.org/docs/stable/generated/torch.nn.Sequential.html
@@ -48,8 +56,8 @@ class DQN(nn.Module):
         """
         # TODO : Define the forward pass of the neural network where x is the input tensor to the network.
         
+        return self.layers(x)
         # Inputs: x defines the observation of the agent : x is a vector of size 80 where each element of the
         # vector corresponds to a cell in the state.
         
         # Retun: return the output of the neural network (a tensor of 4 values)
-        return nn.ReLU(x) # TODO This is the toy forward pass, please implement your own forward pass.
