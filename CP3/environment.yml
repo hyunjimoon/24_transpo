@@ -1,0 +1,13 @@
+name: CP3
+
+dependencies:
+    - python==3.7.3
+    - pip
+    - pytorch
+    - torchvision
+    - pandas
+    - numpy
+    - pip:
+        - matplotlib==3.0.0
+        - wandb
+        - traci
